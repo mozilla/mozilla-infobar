@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>Mozilla Info Bar</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/infobar.css" />
+  </head>
+  <body>
+    <div id="mozilla-infobar" class="mozilla-infobar" role="dialog">
+      <p data-update="Looks like you’re using an older version of Firefox."></p>
+      <ul>
+        <li><button class="btn-accept" type="button">Update to stay fast and safe.</button></li>
+        <li><button class="btn-cancel" type="button">Later</button></li>
+      </ul>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-2.1.4.js"></script>
+    <script src="js/infobar.js"></script>
+  </body>
+</html>
