@@ -13,16 +13,16 @@ describe('infobar.js', function() {
 
         var setup = function (ua, buildID) {
             // Test a case where the latest version is a non-dot release
-            var result1 = Tabzilla.infobar.update('35.0', ua, buildID);
+            var result1 = infoBar.updateBar('35.0', ua, buildID);
 
             // Cleanup
-            $('#tabzilla-infobar').remove();
+            $('#mozilla-infobar').remove();
 
             // Test a case where the latest version is a dot release
-            var result2 = Tabzilla.infobar.update('35.0.1', ua, buildID);
+            var result2 = infoBar.updateBar('35.0.1', ua, buildID);
 
             // Cleanup
-            $('#tabzilla-infobar').remove();
+            $('#mozilla-infobar').remove();
 
             return result1 && result2;
         }
@@ -67,4 +67,4 @@ describe('infobar.js', function() {
         });
 
     });
-}
+});

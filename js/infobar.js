@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * The infoBar exposes two features, the updateBar and the translationBar.
+ */
 var infoBar = (function() {
 
     var opened = false;
@@ -10,44 +13,40 @@ var infoBar = (function() {
         onshow: {},
         onaccept: {},
         oncancel: {},
-        addEaseInOut: function () {
-            $.extend($.easing, {
-                'easeInOut':  function (x, t, b, c, d) {
-                    if (( t /= d / 2) < 1) {
-                        return c / 2 * t * t + b;
-                    }
-                    return -c / 2 * ((--t) * (t - 2) - 1) + b;
-                }
-            });
-        },
-        init: function(id, name) {
+        /**
+         * Initializes the infoBar with the id of the current info bar type:
+         * This is one of type update or l10n
+         * @param id string - The id of the current info bar. Either update or l10n.
+         */
+        init: function(id) {
             this.id = id;
-            this.name = name;
             this.disabled = false;
             this.prefName = 'infobar.' + id + '.disabled';
-
-            this.addEaseInOut();
 
             // Read the preference
             try {
                 if (sessionStorage.getItem(this.prefName) === 'true') {
                     this.disabled = true;
                 }
-            } catch (ex) {}
+            } catch (ex) {
+                console.log('Error while reading disabled status from sessionStarage: ', ex);
+            }
 
             // If there is already another infobar, don't show this
             if ($('#mozilla-infobar:visible').length) {
                 this.disabled = true;
             }
 
-            return infoBar;
+            return this;
         },
-        show: function (str) {
+        /**
+         * Called by updateBar or l10nBar and shows the bar, binding events to buttons.
+         */
+        show: function () {
 
             var $infoBar = $('#mozilla-infobar');
 
             // A infobar can be disabled by pref.
-            // And check the existence of another infobar again
             if (this.disabled) {
                 return;
             }
@@ -90,6 +89,9 @@ var infoBar = (function() {
 
             return bar;
         },
+        /**
+         * Hides the currently visible infoBar
+         */
         hide: function () {
             var self = this;
             var target = (opened) ? self.element : bar;
@@ -99,6 +101,9 @@ var infoBar = (function() {
                 bar.trigger('infobar-hidden');
             });
         },
+        /**
+         *
+         */
         updateBar: function(latestVersion, ua, buildID) {
 
             var latestVersion = parseInt(latestVersion, 10);
