@@ -1,6 +1,9 @@
 'use strict';
 
 var $infoBar = $('#mozilla-infobar');
+var $message = $('p', $infoBar);
+var $acceptButton = $('.btn-accept', $infoBar);
+var $cancelButton = $('.btn-cancel', $infoBar);
 var opened = false;
 
 var bar;
@@ -44,7 +47,7 @@ InfoBar.prototype.setup = function() {
         if (!json) {
              // This loads the data for the transbar which also contains the latest fx version string.
              $.ajax({
-                 url: 'http://localhost:4000/' + lang + '/tabzilla/transbar.jsonp',
+                 url: 'http://localhost:4000/' + lang + '/infobar/infobar.jsonp',
                  cache: true,
                  crossDomain: true,
                  dataType: 'jsonp',
@@ -126,8 +129,10 @@ InfoBar.prototype.show = function () {
 
     if (opened) {
         bar.hide();
+        bar.attr('aria-hidden', true);
     } else {
         bar.show();
+        bar.attr('aria-hidden', false);
     }
 
     return bar;
@@ -142,8 +147,18 @@ InfoBar.prototype.hide = function () {
 
     target.animate({'height': 0}, 200, function () {
         self.element.hide();
-        bar.trigger('infobar-hidden');
+        bar.attr('aria-hidden', true);
     });
+};
+
+/**
+ * Populates the bar template with the relevant strings.
+ * @param {object} content - Object containning template strings.
+ */
+InfoBar.prototype.populateTempl = function(content) {
+    $message.text(content.msg);
+    $acceptButton.text(content.accept);
+    $cancelButton.text(content.cancel);
 };
 
 /**
@@ -155,6 +170,7 @@ InfoBar.prototype.hide = function () {
  */
 InfoBar.update = function(latestVersion, ua, buildID) {
 
+    var content = {};
     var ua = ua || navigator.userAgent;
     var buildID = buildID || navigator.buildID;
 
@@ -180,6 +196,14 @@ InfoBar.update = function(latestVersion, ua, buildID) {
     // property. 20140716183446 is the non-ESR build ID that can be found at
     // https://wiki.mozilla.org/Releases/Firefox_31/Test_Plan
     if (userVersion < latestVersion - 2) {
+
+        content = {
+            msg: json.update_message,
+            accept: json.update_accept,
+            cancel: json.update_cancel
+        };
+
+        updateBar.populateTempl(content);
         updateBar.show();
 
         // If the user accepts, show the SUMO article
