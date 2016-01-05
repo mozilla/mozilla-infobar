@@ -1,0 +1,19 @@
+body {
+    font-family: sans-serif;
+}
+
+ul {
+    margin: 20px;
+}
+
+li {
+    margin: 10px 0;
+}
+
+p {
+    margin: 10px 0;
+}
+
+.container {
+    margin: 40px;
+}

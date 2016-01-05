@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es-ES">
+  <head>
+    <meta charset="utf-8">
+    <title>Mozilla Info Bar</title>
+    <link rel="alternate" hreflang="en-US" href="http://www.mozilla.org/en-US/firefox/new/" title="English (US)">
+    <link rel="alternate" hreflang="fr" href="http://www.mozilla.org/fr/firefox/new/" title="Français">
+    <link rel="stylesheet" href="../../css/libs/reset.css" />
+    <link rel="stylesheet" href="../../css/infobar.css" />
+    <link rel="stylesheet" href="css/manual.css" />
+  </head>
+  <body>
+    <div id="mozilla-infobar" class="mozilla-infobar" role="dialog" aria-hidden="true" data-infobar="translate">
+      <p></p>
+      <ul>
+        <li><button class="btn-accept" type="button"></button></li>
+        <li><button class="btn-cancel" type="button"></button></li>
+      </ul>
+    </div>
+
+    <div class="container">
+      <p>This page has a <code>lang</code> of es-ES and provides <code>hreflang</code> links to alternate language pages for either en-US or fr. If your <code>acceptLanguages</code> is one of the latter, you should see the translation bar in your language.</p>
+
+      <p>Once you have clicked on "No thanks", reloading this tab/window should not show the bar again.</p>
+
+      <ul>
+        <li><a href="/tests/manual/">Update Bar</a></li>
+        <li><a href="/tests/manual/translation_bar_es.html">Translation Bar - ES lang</a></li>
+        <li><a href="/tests/manual/translation_bar.html">Translation Bar - en-US lang</a></li>
+        <li><a href="/tests/manual/translation_bar_select.html">Translation Bar with Select Field</a></li>
+        <li><a href="/tests/manual/update_translation.html">Update and Translation Bar</a></li>
+      </ul>
+    </div>
+
+    <script src="../../js/libs/jquery.js"></script>
+    <script src="../../js/infobar.js"></script>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es-ES">
+  <head>
+    <meta charset="utf-8">
+    <title>Mozilla Info Bar</title>
+    <link rel="stylesheet" href="../../css/libs/reset.css" />
+    <link rel="stylesheet" href="../../css/infobar.css" />
+    <link rel="stylesheet" href="css/manual.css" />
+  </head>
+  <body>
+    <div id="mozilla-infobar" class="mozilla-infobar" role="dialog" aria-hidden="true" data-infobar="translate">
+      <p></p>
+      <ul>
+        <li><button class="btn-accept" type="button"></button></li>
+        <li><button class="btn-cancel" type="button"></button></li>
+      </ul>
+    </div>
+
+    <div class="lang-switcher">
+      <form id="lang_form" method="get" action="#">
+        <label for="page-language-select">Other languages:</label>
+        <select id="page-language-select" name="lang" dir="ltr">
+          <option value="af" lang="af">Afrikaans</option>
+          <option value="an" lang="an">aragonés</option>
+          <option value="ar" lang="ar">عربي</option>
+          <option value="ast" lang="ast">Asturianu</option>
+          <option value="az" lang="az">Azərbaycanca</option>
+          <option value="bg" lang="bg">Български</option>
+          <option value="bn-BD" lang="bn-BD">বাংলা (বাংলাদেশ)</option>
+          <option value="bn-IN" lang="bn-IN">বাংলা (ভারত)</option>
+          <option value="br" lang="br">Brezhoneg</option>
+          <option value="brx" lang="brx">बर'</option>
+          <option value="ca" lang="ca">Català</option>
+          <option value="cs" lang="cs">Čeština</option>
+          <option value="cy" lang="cy">Cymraeg</option>
+          <option value="da" lang="da">Dansk</option>
+          <option value="de" lang="de">Deutsch</option>
+          <option value="dsb" lang="dsb">Dolnoserbšćina</option>
+          <option value="ee" lang="ee">Eʋe</option>
+          <option value="el" lang="el">Ελληνικά</option>
+          <option value="en-GB" lang="en-GB">English (British)</option>
+          <option value="en-US" selected="" lang="en-US">English</option>
+          <option value="eo" lang="eo">Esperanto</option>
+          <option value="es-AR" lang="es-AR">Español (de Argentina)</option>
+          <option value="es-CL" lang="es-CL">Español (de Chile)</option>
+          <option value="es-ES" lang="es-ES">Español (de España)</option>
+          <option value="es-MX" lang="es-MX">Español (de México)</option>
+          <option value="et" lang="et">Eesti keel</option>
+          <option value="eu" lang="eu">Euskara</option>
+          <option value="fa" lang="fa">فارسی</option>
+          <option value="fi" lang="fi">suomi</option>
+          <option value="fr" lang="fr">Français</option>
+          <option value="fy-NL" lang="fy-NL">Frysk</option>
+          <option value="ga-IE" lang="ga-IE">Gaeilge</option>
+          <option value="gd" lang="gd">Gàidhlig</option>
+          <option value="gl" lang="gl">Galego</option>
+          <option value="ha" lang="ha">Hausa</option>
+          <option value="he" lang="he">עברית</option>
+          <option value="hi-IN" lang="hi-IN">हिन्दी (भारत)</option>
+          <option value="hsb" lang="hsb">Hornjoserbsce</option>
+          <option value="hu" lang="hu">magyar</option>
+          <option value="hy-AM" lang="hy-AM">Հայերեն</option>
+          <option value="id" lang="id">Bahasa Indonesia</option>
+          <option value="ig" lang="ig">Igbo</option>
+          <option value="is" lang="is">íslenska</option>
+          <option value="it" lang="it">Italiano</option>
+          <option value="kk" lang="kk">Қазақ</option>
+          <option value="kn" lang="kn">ಕನ್ನಡ</option>
+          <option value="ko" lang="ko">한국어</option>
+          <option value="lij" lang="lij">Ligure</option>
+          <option value="ln" lang="ln">Lingála</option>
+          <option value="lt" lang="lt">lietuvių kalba</option>
+          <option value="lv" lang="lv">Latviešu</option>
+          <option value="mk" lang="mk">Македонски</option>
+          <option value="ml" lang="ml">മലയാളം</option>
+          <option value="my" lang="my">မြန်မာဘာသာ</option>
+          <option value="nb-NO" lang="nb-NO">Norsk bokmål</option>
+          <option value="nl" lang="nl">Nederlands</option>
+          <option value="oc" lang="oc">occitan (lengadocian)</option>
+          <option value="pa-IN" lang="pa-IN">ਪੰਜਾਬੀ (ਭਾਰਤ)</option>
+          <option value="pl" lang="pl">Polski</option>
+          <option value="pt-BR" lang="pt-BR">Português (do&nbsp;Brasil)</option>
+          <option value="pt-PT" lang="pt-PT">Português (Europeu)</option>
+          <option value="rm" lang="rm">rumantsch</option>
+          <option value="ro" lang="ro">Română</option>
+          <option value="ru" lang="ru">Русский</option>
+          <option value="sk" lang="sk">slovenčina</option>
+          <option value="sl" lang="sl">Slovenščina</option>
+          <option value="son" lang="son">Soŋay</option>
+          <option value="sq" lang="sq">Shqip</option>
+          <option value="sr" lang="sr">Српски</option>
+          <option value="sv-SE" lang="sv-SE">Svenska</option>
+          <option value="sw" lang="sw">Kiswahili</option>
+          <option value="ta" lang="ta">தமிழ்</option>
+          <option value="te" lang="te">తెలుగు</option>
+          <option value="tr" lang="tr">Türkçe</option>
+          <option value="uk" lang="uk">Українська</option>
+          <option value="uz" lang="uz">Oʻzbek tili</option>
+          <option value="vi" lang="vi">Tiếng Việt</option>
+          <option value="wo" lang="wo">Wolof</option>
+          <option value="xh" lang="xh">isiXhosa</option>
+          <option value="yo" lang="yo">Yorùbá</option>
+          <option value="zh-CN" lang="zh-CN">中文 (简体)</option>
+          <option value="zh-TW" lang="zh-TW">正體中文 (繁體)</option>
+          <option value="zu" lang="zu">isiZulu</option>
+        </select>
+        <noscript>
+          <button type="submit">Go</button>
+        </noscript>
+      </form>
+    </div>
+
+    <ul>
+      <li><a href="/tests/manual/">Update Bar</a></li>
+      <li><a href="/tests/manual/translation_bar_es.html">Translation Bar - ES lang</a></li>
+      <li><a href="/tests/manual/translation_bar.html">Translation Bar - en-US lang</a></li>
+      <li><a href="/tests/manual/translation_bar_select.html">Translation Bar with Select Field</a></li>
+      <li><a href="/tests/manual/update_translation.html">Update and Translation Bar</a></li>
+    </ul>
+
+    <script src="../../js/libs/jquery.js"></script>
+    <script src="../../js/infobar.js"></script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>Mozilla Info Bar</title>
+    <link rel="stylesheet" href="../../css/libs/reset.css" />
+    <link rel="stylesheet" href="../../css/infobar.css" />
+    <link rel="stylesheet" href="css/manual.css" />
+  </head>
+  <body>
+    <div id="mozilla-infobar" class="mozilla-infobar" role="dialog" aria-hidden="true" data-infobar="update">
+      <p></p>
+      <ul>
+        <li><button class="btn-accept" type="button"></button></li>
+        <li><button class="btn-cancel" type="button"></button></li>
+      </ul>
+    </div>
+
+    <div class="container">
+      <p>This page should show the update bar if your Firefox version is two or more versions older than the current latest release version. This currently does not account for minor version updates.</p>
+
+      <p>Once you have clicked on "Later", reloading this tab/window should not show the bar again.</p>
+
+      <ul>
+        <li><a href="/tests/manual/">Update Bar</a></li>
+        <li><a href="/tests/manual/translation_bar_es.html">Translation Bar - ES lang</a></li>
+        <li><a href="/tests/manual/translation_bar.html">Translation Bar - en-US lang</a></li>
+        <li><a href="/tests/manual/translation_bar_select.html">Translation Bar with Select Field</a></li>
+        <li><a href="/tests/manual/update_translation.html">Update and Translation Bar</a></li>
+      </ul>
+    </div>
+
+    <script src="../../js/libs/jquery.js"></script>
+    <script src="../../js/infobar.js"></script>
+  </body>
+</html>
