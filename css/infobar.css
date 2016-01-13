@@ -1,0 +1,46 @@
+.mozilla-infobar * {
+    box-sizing: border-box;
+}
+.mozilla-infobar {
+    display: none;
+    background-color: #00539f;
+    color: #fff;
+    padding: 10px;
+    width: 100%;
+    height: 35px;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.mozilla-infobar p,
+.mozilla-infobar li {
+    display: inline;
+    margin: 0 10px 0 0;
+}
+
+.mozilla-infobar ul {
+    display: inline;
+    margin: 0;
+    list-style-type: none;
+}
+
+.mozilla-infobar button {
+    background-color: #fff;
+    padding: .5rem;
+    border: 0;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: .8rem;
+    white-space: nowrap;
+}
+
+.mozilla-infobar button:hover,
+.mozilla-infobar button:focus {
+    background-color: darken(#f1f8ff, 3%);
+    border-color: darken(#f1f8ff, 13%);
+}
+
+.mozilla-infobar [dir="rtl"] p,
+.mozilla-infobar [dir="rtl"] li {
+    margin: 0 0 0 10px;
+}
