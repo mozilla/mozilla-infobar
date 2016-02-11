@@ -1,4 +1,4 @@
-$(function() {
+(function() {
 
     'use strict';
 
@@ -78,23 +78,24 @@ $(function() {
     InfoBar.prototype.getAvailableLangs = function() {
         var $links = $('link[hreflang]');
         var $options = $('#page-language-select option');
+        var availableLangs = {};
 
         // Make a dictionary from alternate URLs or a language selector. The key
         // is a language, the value is the relevant <link> or <option> element.
         if ($links.length) {
             $links.each(function () {
-                config.availableLangs[InfoBar.prototype.normalize(this.hreflang)] = this;
+                availableLangs[InfoBar.prototype.normalize(this.hreflang)] = this;
             });
+            return availableLangs;
         } else if ($options.length) {
             $options.each(function () {
-                config.availableLangs[InfoBar.prototype.normalize(this.value.match(/^\/?([\w\-]+)/)[1])] = this;
+                availableLangs[InfoBar.prototype.normalize(this.value.match(/^\/?([\w\-]+)/)[1])] = this;
             });
+            return availableLangs;
         } else {
             // If those lists cannot be found, there is nothing to do
             return false;
         }
-
-        return true;
     };
 
     /**
@@ -128,9 +129,10 @@ $(function() {
         var offeredLang;
 
         config.lang = pageLang || config.lang;
+        config.availableLangs = InfoBar.prototype.getAvailableLangs();
 
         // If there are no available languages, we have nothing to do.
-        if (!InfoBar.prototype.getAvailableLangs()) {
+        if (!config.availableLangs) {
             return false;
         }
 
@@ -478,4 +480,7 @@ $(function() {
 
     // $infoBar exists, call setup
     InfoBar.prototype.setup();
-});
+
+    window.InfoBar = InfoBar;
+
+})();

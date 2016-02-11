@@ -42,16 +42,15 @@ describe('infobar.js', function() {
 
         afterEach(function() {
             $('link[hreflang]').remove();
-            availableLangs = {};
         });
 
         it('should populate the availableLangs object with two elements from links', function() {
-            InfoBar.prototype.getAvailableLangs();
+            var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(Object.keys(availableLangs).length).toBe(2);
         });
 
         it('should have es-ES entry in availableLangs', function() {
-            InfoBar.prototype.getAvailableLangs();
+            var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(availableLangs['es-ES']).toBeDefined();
         });
     });
@@ -71,16 +70,15 @@ describe('infobar.js', function() {
 
         afterEach(function() {
             $('#page-language-select').remove();
-            availableLangs = {};
         });
 
         it('should populate the availableLangs object with two elements from options', function() {
-            InfoBar.prototype.getAvailableLangs();
+            var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(Object.keys(availableLangs).length).toBe(2);
         });
 
         it('should have fr entry in availableLangs', function() {
-            InfoBar.prototype.getAvailableLangs();
+            var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(availableLangs['fr']).toBeDefined();
         });
 
@@ -120,7 +118,6 @@ describe('infobar.js', function() {
 
         afterEach(function() {
             $('link[hreflang]').remove();
-            availableLangs = {};
         });
 
         it('should return en-US as the offeredLang', function() {
@@ -143,7 +140,6 @@ describe('infobar.js', function() {
 
         afterEach(function() {
             $('link[hreflang]').remove();
-            availableLangs = {};
         });
 
         it('should return false as userLang matches pageLang', function() {
