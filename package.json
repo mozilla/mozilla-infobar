@@ -1,24 +1,21 @@
 {
   "name": "mozilla-infobar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Mozilla InfoBar",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/mozilla/bedrock.git"
+    "url": "https://github.com/mozilla/mozilla-infobar"
+  },
+  "scripts": {
+    "test": "karma start tests/unit/karma.conf.js"  
   },
   "author": "Mozilla",
-  "license": "MPL",
+  "license": "MPL2",
   "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-cli": "~0.1.11",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-karma": "^0.12.1",
-    "jasmine-ajax": "^3.2.0",
-    "jasmine-core": "^2.3.4",
-    "karma": "^0.13.10",
+    "karma": "^0.13.19",
+    "jasmine": "^2.4.1",
     "karma-firefox-launcher": "^0.1.6",
-    "karma-jasmine": "^0.3.6",
-    "load-grunt-tasks": "^1.0.0"
+    "karma-jasmine": "^0.3.6"
   }
 }
