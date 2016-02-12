@@ -1,0 +1,29 @@
+{
+  "name": "mozilla-infobar",
+  "version": "0.2.0",
+  "homepage": "https://github.com/mozilla/mozilla-infobar",
+  "authors": ["Mozilla"],
+  "description": "The Mozilla, Firefox update, and translation bars",
+  "main": ["js/infobar.js"],
+  "ignore": [
+    "css/libs/",
+    "js/libs/",
+    "node_modules",
+    "tests",
+    ".gitignore",
+    ".jshintrc.dist",
+    "bower.json",
+    "contribute.json",
+    "LICENSE",
+    "package.json"
+  ],
+  "keywords": [
+    "mozilla",
+    "infobar"
+  ],
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/mozilla/mozilla-infobar"
+  },
+  "license": "MPL-2.0"
+}

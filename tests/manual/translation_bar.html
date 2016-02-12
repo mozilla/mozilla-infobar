@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/manual.css" />
   </head>
   <body>
-    <div id="mozilla-infobar" class="mozilla-infobar" role="dialog" aria-hidden="true" data-infobar="translate">
+    <div id="mozilla-infobar" class="mozilla-infobar infobar-hidden" role="dialog" aria-hidden="true" data-infobar="translate">
       <p></p>
       <ul>
         <li><button class="btn-accept" type="button"></button></li>
@@ -18,13 +18,15 @@
       </ul>
     </div>
 
-    <ul>
-      <li><a href="/tests/manual/">Update Bar</a></li>
-      <li><a href="/tests/manual/translation_bar_es.html">Translation Bar - ES lang</a></li>
-      <li><a href="/tests/manual/translation_bar.html">Translation Bar - en-US lang</a></li>
-      <li><a href="/tests/manual/translation_bar_select.html">Translation Bar with Select Field</a></li>
-      <li><a href="/tests/manual/update_translation.html">Update and Translation Bar</a></li>
-    </ul>
+    <div class="container">
+      <ul>
+        <li><a href="/tests/manual/">Update Bar</a></li>
+        <li><a href="/tests/manual/translation_bar_es.html">Translation Bar - ES lang</a></li>
+        <li><a href="/tests/manual/translation_bar.html">Translation Bar - en-US lang</a></li>
+        <li><a href="/tests/manual/translation_bar_select.html">Translation Bar with Select Field</a></li>
+        <li><a href="/tests/manual/update_translation.html">Update and Translation Bar</a></li>
+      </ul>
+    </div>
 
     <script src="../../js/libs/jquery.js"></script>
     <script src="../../js/infobar.js"></script>

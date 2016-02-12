@@ -294,10 +294,10 @@
         }
 
         if (config.opened) {
-            config.bar.hide();
+            config.bar.toggleClass('infobar-hidden');
             config.bar.attr('aria-hidden', true);
         } else {
-            config.bar.show();
+            config.bar.toggleClass('infobar-hidden');
             config.bar.attr('aria-hidden', false);
         }
 
