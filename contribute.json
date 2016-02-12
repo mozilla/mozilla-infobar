@@ -1,0 +1,32 @@
+{
+    "name": "Mozilla Infobar",
+    "description": "The Mozilla Firefox update and translation bars",
+    "repository": {
+        "url": "https://github.com/mozilla/mozilla-infobar",
+        "license": "MPL2"
+    },
+    "participate": {
+        "docs": "https://github.com/mozilla/mozilla-infobar/blob/master/README.md",
+        "irc": "irc://irc.mozilla.org/#www",
+        "irc-contacts": [
+            "agibson",
+            "espressive",
+            "jpetto",
+            "kohei"
+        ]
+    },
+    "bugs": {
+        "list": "https://github.com/mozilla/mozilla-infobar/issues",
+        "report": "https://github.com/mozilla/mozilla-infobar/issues/new"
+    },
+    "urls": {
+        "dev": "https://github.com/mozilla/mozilla-infobar"
+    },
+    "keywords": [
+        "javascript",
+        "css",
+        "karma",
+        "jasmine",
+        "jquery"
+    ]
+}
