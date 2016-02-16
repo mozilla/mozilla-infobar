@@ -2,19 +2,22 @@
   "name": "mozilla-infobar",
   "version": "0.2.0",
   "description": "Mozilla InfoBar",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/mozilla/mozilla-infobar"
   },
+  "bugs": {
+      "url": "https://github.com/mozilla/mozilla-infobar/issues/new"
+  },
   "scripts": {
-    "test": "karma start tests/unit/karma.conf.js"  
+    "test": "karma start tests/unit/karma.conf.js"
   },
   "author": "Mozilla",
-  "license": "MPL2",
+  "license": "MPL-2.0",
+  "dependencies": {},
   "devDependencies": {
     "karma": "^0.13.19",
-    "jasmine": "^2.4.1",
+    "jasmine-core": "^2.4.1",
     "karma-firefox-launcher": "^0.1.6",
     "karma-jasmine": "^0.3.6"
   }
