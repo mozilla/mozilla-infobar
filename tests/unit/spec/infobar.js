@@ -20,16 +20,16 @@ describe('infobar.js', function() {
     });
 
     describe('InfoBar.prototype.normalize', function () {
-        it('should return en-US when en-us is provided', function() {
+        it('should return en-US when en-us is specified', function() {
             expect(InfoBar.prototype.normalize('en-us')).toBe('en-US');
         });
 
-        it('should return ca when CA is provided', function() {
+        it('should return ca when CA is specified', function() {
             expect(InfoBar.prototype.normalize('CA')).toBe('ca');
         });
     });
 
-    describe('InfoBar.prototype.getAvailableLangs - hreflang links', function () {
+    describe('InfoBar.prototype.getAvailableLangs - hreflang', function () {
 
         beforeEach(function() {
             var hreflangLinks = [
@@ -44,12 +44,12 @@ describe('infobar.js', function() {
             $('link[hreflang]').remove();
         });
 
-        it('should populate the availableLangs object with two elements from links', function() {
+        it('should populate the availableLangs object with two elements', function() {
             var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(Object.keys(availableLangs).length).toBe(2);
         });
 
-        it('should have es-ES entry in availableLangs', function() {
+        it('should have es-ES entry in availableLangs array', function() {
             var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(availableLangs['es-ES']).toBeDefined();
         });
@@ -72,7 +72,7 @@ describe('infobar.js', function() {
             $('#page-language-select').remove();
         });
 
-        it('should populate the availableLangs object with two elements from options', function() {
+        it('should populate the availableLangs object with two elements', function() {
             var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(Object.keys(availableLangs).length).toBe(2);
         });
@@ -81,21 +81,32 @@ describe('infobar.js', function() {
             var availableLangs = InfoBar.prototype.getAvailableLangs();
             expect(availableLangs['fr']).toBeDefined();
         });
-
     });
 
     describe('InfoBar.prototype.getAvailableLangs - no translations', function() {
-        it('should return false if no translations exists', function() {
+        it('should return false if no alternate translations exist', function() {
             var isAvailableLangs = InfoBar.prototype.getAvailableLangs();
             expect(isAvailableLangs).toBeFalsy();
         });
     });
 
     describe('InfoBar.prototype.userLangPageLangMatch', function() {
-        it('should return true if the users language matches the page language', function() {
+        it('should return true if the accept language match the page language', function() {
             var acceptLangs = ['en-US', 'en'];
             var match = InfoBar.prototype.userLangPageLangMatch(acceptLangs, 'en');
             expect(match).toBeTruthy();
+        });
+
+        it('should return true if the accept language array contains the page language', function() {
+            var match = InfoBar.prototype.userLangPageLangMatch;
+            expect(match(['en-US'], 'en-US')).toBeTruthy();
+            expect(match(['en-US', 'en', 'fr'], 'en-US')).toBeTruthy();
+            expect(match(['fr', 'de'], 'fr')).toBeTruthy();
+            expect(match(['de', 'fr', 'en'], 'fr')).toBeTruthy();
+            expect(match(['ja', 'pt-PT', 'el', 'fr', 'en'], 'el')).toBeTruthy();
+            expect(match(['en-ZA', 'en-GB', 'en'], 'en-GB')).toBeTruthy();
+            expect(match(['fr-FR'], 'fr')).toBeTruthy();
+            expect(match(['el-GR'], 'el')).toBeTruthy();
         });
 
         it('should return false if the users language does not match the page language', function() {
@@ -106,10 +117,17 @@ describe('infobar.js', function() {
     });
 
     describe('InfoBar.prototype.getOfferedLang', function() {
+        it('should return false if there are no alternate languages', function() {
+            var offeredLang = InfoBar.prototype.getOfferedLang;
+            expect(offeredLang(['en-US', 'en'], 'es-ES')).toBeFalsy();
+        });
+    });
+
+    describe('InfoBar.prototype.getOfferedLang', function() {
 
         beforeEach(function() {
             var hreflangLinks = [
-                '<link rel="alternate" hreflang="en-US" href="http://www.mozilla.org/en-US/firefox/new/" />',
+                '<link rel="alternate" hreflang="es-ES" href="http://www.mozilla.org/es-ES/firefox/new/" />',
                 '<link rel="alternate" hreflang="fr" href="http://www.mozilla.org/fr/firefox/new/" />'
             ].join();
 
@@ -120,181 +138,70 @@ describe('infobar.js', function() {
             $('link[hreflang]').remove();
         });
 
-        it('should return en-US as the offeredLang', function() {
-            var acceptLangs = ['en-US', 'en'];
-            var offeredLang = InfoBar.prototype.getOfferedLang(acceptLangs, 'es-ES');
-            expect(offeredLang).toBe('en-US');
+        it('should return false if the page language matches the user\'s primary language', function() {
+            var offeredLang = InfoBar.prototype.getOfferedLang;
+            expect(offeredLang(['es-ES', 'es'], 'es-ES')).toBeFalsy();
+        });
+
+        it('should return the available offered language', function() {
+            var offeredLang = InfoBar.prototype.getOfferedLang;
+            expect(offeredLang(['de', 'fr'], 'en-US')).toBe('fr');
+            expect(offeredLang(['de', 'it', 'pt-PT', 'es'], 'en-US')).toBe('es-ES');
+        });
+
+        it('should return false if no primary language match, nor available language match were found', function() {
+            var offeredLang = InfoBar.prototype.getOfferedLang;
+            expect(offeredLang(['de', 'it'], 'en-US')).toBeFalsy();
         });
     });
 
-    describe('InfoBar.prototype.getOfferedLang - pageLang equals userLang', function() {
+    describe("infobar.update", function () {
 
-        beforeEach(function() {
-            var hreflangLinks = [
-                '<link rel="alternate" hreflang="es-ES" href="http://www.mozilla.org/en-US/firefox/new/" />',
-                '<link rel="alternate" hreflang="fr" href="http://www.mozilla.org/fr/firefox/new/" />'
-            ].join();
+        var setup = function (ua, buildID) {
+            // Test a case where the latest version is a non-dot release
+            var result1 = InfoBar.update('35.0', ua, buildID);
+            // Test a case where the latest version is a dot release
+            var result2 = InfoBar.update('35.0.1', ua, buildID);
+            return result1 && result2;
+        }
 
-            $(hreflangLinks).appendTo('head');
+        it('should return false if the user agent is not Firefox', function () {
+            expect(setup('Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)')).toBeFalsy();
+            expect(setup('Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.4; en; rv:1.9.2.24) Gecko/20111114 Camino/2.1 (like Firefox/3.6.24)')).toBeFalsy();
+            expect(setup('Mozilla/5.0 (X11; Linux i686; rv:10.0.1) Gecko/20100101 Firefox/10.0.1 SeaMonkey/2.7.1')).toBeFalsy();
+            expect(setup('Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.16 Safari/537.36')).toBeFalsy();
         });
 
-        afterEach(function() {
-            $('link[hreflang]').remove();
+        it('should return false if the user agent is a latest Firefox version', function () {
+            expect(setup('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:39.0) Gecko/20100101 Firefox/39.0')).toBeFalsy();
+            expect(setup('Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:36.0) Gecko/20100101 Firefox/36.0')).toBeFalsy();
+            expect(setup('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:34.0) Gecko/20100101 Firefox/34.0')).toBeFalsy();
         });
 
-        it('should return false as userLang matches pageLang', function() {
-            var acceptLangs = ['es-ES', 'es'];
-
-            var offeredLang = InfoBar.prototype.getOfferedLang(acceptLangs, 'es-ES');
-            expect(offeredLang).toBeFalsy();
-
-            offeredLang = InfoBar.prototype.getOfferedLang(acceptLangs, 'es');
-            expect(offeredLang).toBeFalsy();
-        });
-    });
-
-    describe('InfoBar.prototype.isLikeFirefox', function() {
-
-        it('should consider SeaMonkey to be like Firefox', function() {
-            var ua = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0 SeaMonkey/2.37a1';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).toBeTruthy();
+        it('should return false if the user agent is Firefox for mobile', function () {
+            // Nokia N900 Linux mobile, on the Fennec browser
+            expect(setup('Mozilla/5.0 (Maemo; Linux armv7l; rv:10.0) Gecko/20100101 Firefox/10.0 Fennec/10.0')).toBeFalsy();
+            // Android phone and tablet
+            expect(setup('Mozilla/5.0 (Android; Mobile; rv:26.0) Gecko/26.0 Firefox/26.0')).toBeFalsy();
+            expect(setup('Mozilla/5.0 (Android; Tablet; rv:26.0) Gecko/26.0 Firefox/26.0')).toBeFalsy();
+            // Firefox OS phone and tablet
+            expect(setup('Mozilla/5.0 (Mobile; rv:26.0) Gecko/26.0 Firefox/26.0')).toBeFalsy();
+            expect(setup('Mozilla/5.0 (Tablet; rv:26.0) Gecko/26.0 Firefox/26.0')).toBeFalsy();
         });
 
-        it('should consider IceWeasel to be like Firefox', function() {
-            var ua = 'Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20121202 Firefox/17.0 Iceweasel/17.0.1';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).toBeTruthy();
+        it('should return false if the user agent is Firefox ESR', function () {
+            // Firefox 31 ESR
+            expect(setup('Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:31.0) Gecko/20100101 Firefox/31.0', '20140717132905')).toBeFalsy();
+            // Firefox 31.4.0 ESR
+            expect(setup('Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:31.0) Gecko/20100101 Firefox/31.0', '20150105205548')).toBeFalsy();
         });
 
-        it('should consider IceCat to be like Firefox', function() {
-            var ua = 'Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20121201 icecat/17.0.1';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should consider Camino to be like Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.4; en; rv:1.9.2.24) Gecko/20111114 Camino/2.1 (like Firefox/3.6.24)';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should consider Camino like userAgent to be like Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.4; en; rv:1.9.2.24) Gecko/20111114 (like Firefox/3.6.24)';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should not consider Firefox to be "like" Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:23.0) Gecko/20100101 Firefox/23.0';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider Chrome to be like Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider Safari to be like Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider IE to be like Firefox', function() {
-            var ua = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)';
-            var result = InfoBar.prototype.isLikeFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-    });
-
-    describe('InfoBar.prototype.isFirefoxMobile', function() {
-
-        it('should return false for Firefox on Desktop', function() {
-            var ua = 'Mozilla/5.0 (Windows NT x.y; rv:10.0) Gecko/20100101 Firefox/10.0';
-            expect(InfoBar.prototype.isFirefoxMobile(ua)).not.toBeTruthy();
-
-            ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0';
-            expect(InfoBar.prototype.isFirefoxMobile(ua)).not.toBeTruthy();
-
-            ua = 'Mozilla/5.0 (X11; Linux i686; rv:10.0) Gecko/20100101 Firefox/10.0';
-            expect(InfoBar.prototype.isFirefoxMobile(ua)).not.toBeTruthy();
-        });
-
-        it('should return true for Firefox Android on Phone', function() {
-            var ua = 'Mozilla/5.0 (Android; Mobile; rv:26.0) Gecko/26.0 Firefox/26.0';
-            var result = InfoBar.prototype.isFirefoxMobile(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should return true for Firefox Android on Tablet', function() {
-            var ua = 'Mozilla/5.0 (Android; Tablet; rv:26.0) Gecko/26.0 Firefox/26.0';
-            var result = InfoBar.prototype.isFirefoxMobile(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should return true for Firefox OS on Phone', function() {
-            var ua = 'Mozilla/5.0 (Mobile; rv:26.0) Gecko/26.0 Firefox/26.0';
-            var result = InfoBar.prototype.isFirefoxMobile(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should return true for Firefox OS on Tablet', function() {
-            var ua = 'Mozilla/5.0 (Tablet; rv:26.0) Gecko/26.0 Firefox/26.0';
-            var result = InfoBar.prototype.isFirefoxMobile(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should return true for Firefox for Maemo (Nokia N900)', function() {
-            var ua = 'Mozilla/5.0 (Maemo; Linux armv7l; rv:10.0.1) Gecko/20100101 Firefox/10.0.1 Fennec/10.0.1';
-            var result = InfoBar.prototype.isFirefoxMobile(ua);
-            expect(result).toBeTruthy();
-        });
-    });
-
-    describe('InfoBar.prototype.isFirefox', function() {
-        it('should consider Firefox to be Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:23.0) Gecko/20100101 Firefox/23.0';
-            var result = InfoBar.prototype.isFirefox(ua);
-            expect(result).toBeTruthy();
-        });
-
-        it('should not consider Camino to be Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.4; en; rv:1.9.2.24) Gecko/20111114 Camino/2.1 (like Firefox/3.6.24)';
-            var result = InfoBar.prototype.isFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider Chrome to be Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36';
-            var result = InfoBar.prototype.isFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider Safari to be Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2';
-            var result = InfoBar.prototype.isFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider IE to be Firefox', function() {
-            var ua = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)';
-            var result = InfoBar.prototype.isFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider SeaMonkey to be Firefox', function() {
-            var ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0 SeaMonkey/2.22.1';
-            var result = InfoBar.prototype.isFirefox(ua);
-            expect(result).not.toBeTruthy();
-        });
-
-        it('should not consider Iceweasel to be Firefox', function() {
-            var ua = 'Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20121202 Firefox/17.0 Iceweasel/17.0.1';
-            var result = InfoBar.prototype.isFirefox(ua);
-            expect(result).not.toBeTruthy();
+        it('should return true if the user agent is an outdated Firefox version', function () {
+            expect(setup('Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:22.0) Gecko/20100101 Firefox/22.0')).toBeTruthy();
+            expect(setup('Mozilla/5.0 (Windows NT 6.2; WOW64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1')).toBeTruthy();
+            expect(setup('Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.9) Gecko/20100915 Gentoo Firefox/3.6.9')).toBeTruthy();
+            // Firefox 31 non-ESR
+            expect(setup('Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:31.0) Gecko/20100101 Firefox/31.0', '20140716183446')).toBeTruthy();
         });
     });
 });
