@@ -3,24 +3,29 @@
     'use strict';
 
     var config = {
-        // The $infoBar HTML element
-        $infoBar: {},
-        $message: {},
-        $acceptButton: {},
-        $cancelButton: {},
-        // info bar(s) the user wish to use
-        bars: [],
-        // The current instant if an InfoBar
-        bar: {},
-        opened:false,
-        json: {},
-        lang: '',
-        // list of available languags from either a list of hreflang links
+        // list of available languages from either a list of hreflang links
         // or options from a select element. Populated by @getAvailableLangs
         availableLangs: {},
         // Array of one or more user languages as exposed by the user agent
-        acceptLangs:[]
+        acceptLangs:[],
+        // info bar(s) the user wish to use
+        bars: [],
+        // The current instance of an InfoBar
+        bar: {},
+        json: {},
+        opened: false,
+        // The language used to load the strings and data for the InfoBar
+        offeredLang: '',
+        pageLang: '',
+        userAgent: '',
+        // get the main InfoBar element
+        $infoBar: $('#mozilla-infobar')
     };
+
+    // get and cache all the DOM elements we will need
+    config.$message = $('p', config.$infoBar);
+    config.$acceptButton = $('.btn-accept', config.$infoBar);
+    config.$cancelButton = $('.btn-cancel', config.$infoBar);
 
     var InfoBar = function (id, name) {
         this.id = id;
@@ -33,12 +38,10 @@
             if (sessionStorage.getItem(this.prefName) === 'true') {
                 this.disabled = true;
             }
-        } catch (ex) {
-            console.log('Error thrown while getting disabled state from sessionStorage: ', ex);
-        }
+        } catch (ex) {}
 
         // If there is already another $infoBar, don't show this
-        if (config.$infoBar.filter(':visible').length) {
+        if (!this.disabled && config.$infoBar.filter(':visible').length) {
             this.disabled = true;
         }
     };
@@ -51,7 +54,7 @@
      */
     InfoBar.prototype.getLanguageBidi = function(lang) {
         // Languages using BiDi (right-to-left) layout
-        var LANGUAGES_BIDI = ['he', 'ar', 'fa', 'ur'];
+        var LANGUAGES_BIDI = ['ar', 'fa', 'he', 'ur'];
 
         if (!lang) {
             return false;
@@ -72,7 +75,7 @@
     };
 
     /**
-     * Gets and sets the list of available languags from either a list of hreflang links
+     * Gets and sets the list of available languages from either a list of hreflang links
      * or options from a select element. If neither is found, it simply returns false.
      */
     InfoBar.prototype.getAvailableLangs = function() {
@@ -99,19 +102,23 @@
     };
 
     /**
-     * Determines whether the users accept language(s) match the current
+     * Determines whether the user's accept language list matches the current
      * page language.
      * @param {array} acceptLangs - Array of user accept languages
      * @param {string} [pageLang] - The current page language
      */
     InfoBar.prototype.userLangPageLangMatch = function(acceptLangs, pageLang) {
 
+        var langCode = '';
         var match = false;
-        config.lang = pageLang || config.lang;
+        config.pageLang = pageLang || config.pageLang;
 
-        $.each(acceptLangs, function(index, userLang) {
-            if (config.lang === userLang || config.lang === userLang.split('-')[0]) {
+        $.each(acceptLangs, function(index, value) {
+            langCode = value.split('-')[0];
+
+            if (config.pageLang === value || config.pageLang === langCode) {
                 match = true;
+                return false;
             }
         });
 
@@ -125,35 +132,74 @@
      * @param {string} pageLang - The current page language
      */
     InfoBar.prototype.getOfferedLang = function(acceptLangs, pageLang) {
-        var shortUserLang = '';
-        var offeredLang;
+        var langCode = '';
+        var indexMatch = false;
+        var langCodeMatch = false;
+        var offeredLang = false;
 
-        config.lang = pageLang || config.lang;
+        config.pageLang = pageLang || config.pageLang;
         config.availableLangs = InfoBar.prototype.getAvailableLangs();
 
-        // If there are no available languages, we have nothing to do.
+        // If there are no available languages, we are done.
         if (!config.availableLangs) {
             return false;
         }
 
-        // If the users accept language(s) match page lang, we are done.
-        if (InfoBar.prototype.userLangPageLangMatch(acceptLangs)) {
+        // If the page language is the user's primary language, we are done.
+        if (config.pageLang === acceptLangs[0]) {
             return false;
         }
 
         // Compare the user's accept languages against available
         // languages to find the best language
-        $.each(acceptLangs, function(index, userLang) {
+        $.each(acceptLangs, function(index, value) {
+            langCode = value.split('-')[0];
+            indexMatch = $.inArray(value, config.availableLangs) > -1;
+            langCodeMatch = $.inArray(langCode, config.availableLangs) > -1;
 
-            shortUserLang = userLang.split('-')[0];
-
-            if (userLang in config.availableLangs || shortUserLang in config.availableLangs) {
-                offeredLang = userLang;
+            if (indexMatch || langCodeMatch) {
+                offeredLang = acceptLangs[index];
+                return false;
             }
         });
 
-        // If there is no offered language return false, else true
-        return !offeredLang ? false : offeredLang;
+        if (!offeredLang) {
+            // no match found yet, loop over available languages
+            $.each(config.availableLangs, function(index) {
+                langCode = index.split('-')[0];
+                indexMatch = $.inArray(index, acceptLangs) > -1;
+                langCodeMatch = $.inArray(langCode, acceptLangs) > -1;
+
+                if (indexMatch || langCodeMatch) {
+                    offeredLang = index;
+                    return false;
+                }
+            });
+        }
+
+        return offeredLang;
+    };
+
+    /**
+     * Gets the list of the user's acceptLanguages as appropriate for the
+     * current browser.
+     * @param {array} userLangs - Array of user accept languages
+     */
+    InfoBar.prototype.getAcceptLangs = function(userLangs) {
+        var userAcceptLangs;
+        // Note that navigator.language doesn't always work because it's just
+        // the application's locale on some browsers. navigator.languages has
+        // not been widely implemented yet, but the new property provides an
+        // array of the user's accept languages that we'd like to see.
+        // navigator.languages are only supported from Firefox/Chrome 32 and
+        // not at all by IE, Safari, Opera.
+        userLangs = userLangs || navigator.languages;
+
+        userAcceptLangs = $.map(userLangs, function (lang) {
+            return InfoBar.prototype.normalize(lang);
+        });
+
+        return userAcceptLangs;
     };
 
     /**
@@ -167,57 +213,26 @@
 
     /**
      * Main function called afer document.ready
-     * @param {array} userLangs - Array of user accept languages
+     * @param {array} acceptLangs - Array of user accept languages
      * @param {string} pageLang - The current page language
      */
-    InfoBar.prototype.setup = function(userLangs, pageLang) {
-        // get and cache all the DOM elements we will need
-        config.$message = $('p', config.$infoBar);
-        config.$acceptButton = $('.btn-accept', config.$infoBar);
-        config.$cancelButton = $('.btn-cancel', config.$infoBar);
+    InfoBar.prototype.setup = function(acceptLangs, pageLang) {
+        // we want to load the strings for the InfoBar based on the user's acceptLangs
+        // if we support the locale. We therefore first see if there is an offered language,
+        // else we fall back to the current page language for the strings.
+        config.offeredLang = InfoBar.prototype.getOfferedLang(acceptLangs) || pageLang;
+        config.userAgent = navigator.userAgent;
 
-        // get the info bar(s) the user wish to use
+        // get the info bar(s) the user wish to apply
         config.bars = config.$infoBar.data('infobar').split(' ');
-        config.lang = InfoBar.prototype.normalize(pageLang || document.documentElement.lang);
-
-        // if the translation bar is one of the specified infobars,
-        // we need to get the offered language now so that we can load
-        // the appropriate translated strings below. If there is no offered lang,
-        // we fallback to the page language.
-        if ($.inArray('translate', config.bars) > -1) {
-
-            userLangs = userLangs || navigator.languages || navigator.language || navigator.browserLanguage;
-
-            // Note that navigator.language doesn't always work because it's just
-            // the application's locale on some browsers. navigator.languages has
-            // not been widely implemented yet, but the new property provides an
-            // array of the user's accept languages that we'd like to see.
-            // navigator.languages are only supported from Firefox/Chrome 32 and
-            // not at all by IE, Safari, Opera. navigator.language is not supported
-            // by IE so, we need to fallback to navigator.browserLanguage
-            if (navigator.languages) {
-                // Normalize all language strings for easier comparison.
-                config.acceptLangs = $.map(userLangs, function (lang) {
-                    return InfoBar.prototype.normalize(lang);
-                });
-            } else if (navigator.language || navigator.browserLanguage) {
-                // the above properties only return one item but we need
-                // this as an array in the getOfferedLang function.
-                config.acceptLangs = [userLangs];
-            }
-
-            config.lang =  InfoBar.prototype.getOfferedLang(config.acceptLangs) || config.lang;
-        }
 
         try {
             config.json = JSON.parse(sessionStorage.getItem('infobar.json'));
-        } catch (ex) {
-            console.log('Error thrown while getting json from sessionStorage: ', ex);
-        }
+        } catch (ex) {}
 
         // check if the JSON exists in sessionStorage
         if (!config.json) {
-            var jsonURL = 'https://www.mozilla.org/' + config.lang + '/infobar/infobar.jsonp';
+            var jsonURL = 'https://www.mozilla.org/' + config.offeredLang + '/infobar/infobar.jsonp';
              // This loads the data for the transbar which also contains the latest fx version string.
              $.ajax({
                  url: jsonURL,
@@ -230,17 +245,11 @@
                      // during this user session.
                      try {
                          sessionStorage.setItem('infobar.json', JSON.stringify(data));
-                     } catch(ex) {
-                         console.log('Error while storing JSON in sessionStorage: ', ex);
-                     }
+                     } catch(ex) {}
 
                      config.json = data;
                      InfoBar.prototype.call();
                  }
-             }).fail(function(jqXHR, textStatus, errorThrown) {
-                 console.log('Error thrown while loading JSON:');
-                 console.log('textStatus: ', textStatus);
-                 console.log('errorThrown: ', errorThrown);
              });
         } else {
             // the JSON has already been loaded earlier in this session.
@@ -251,6 +260,16 @@
     InfoBar.prototype.onshow = {};
     InfoBar.prototype.onaccept = {};
     InfoBar.prototype.oncancel = {};
+
+    /**
+     * Attempts to store the disabled status of the specified InfoBar in sessionStorage
+     * @param {string} prefName - The stored preference name for this InfoBar
+     */
+    InfoBar.prototype.setDisabledStatus = function(prefName) {
+        try {
+            sessionStorage.setItem(prefName, 'true');
+        } catch (ex) {}
+    };
 
     /**
      * Shows the relevant bar, binding events to the buttons.
@@ -273,6 +292,7 @@
                 self.onaccept.callback();
             }
 
+            InfoBar.prototype.setDisabledStatus(self.prefName);
             self.hide();
         });
 
@@ -283,10 +303,8 @@
                 self.oncancel.callback();
             }
 
+            InfoBar.prototype.setDisabledStatus(self.prefName);
             self.hide();
-            try {
-                sessionStorage.setItem(self.prefName, 'true');
-            } catch (ex) {}
         });
 
         if (self.onshow.callback) {
@@ -319,74 +337,71 @@
 
     /**
      * Populates the bar template with the relevant strings.
-     * @param {object} content - An object containing the template strings.
+     * @param {String} tmpl - A string identifying the template to populate.
      */
-    InfoBar.prototype.populateTempl = function(content) {
+    InfoBar.prototype.populateTmpl = function(tmpl) {
+
+        var content = {};
+
+        if (tmpl === 'update') {
+            content = {
+                msg: config.json.update_message,
+                accept: config.json.update_accept,
+                cancel: config.json.update_cancel
+            };
+        } else {
+            content = {
+                msg: config.json.message,
+                accept: config.json.accept,
+                cancel: config.json.cancel
+            };
+        }
+
         config.$message.text(content.msg);
         config.$acceptButton.text(content.accept);
         config.$cancelButton.text(content.cancel);
     };
 
     /**
-     * Returns true if the current UA is one of the user agents based
-     * on Firefox.
+     * Detect whether the user's browser is Gecko-based.
+     * @private
+     * @param  {String} ua - browser's user agent string, config.userAgent is used if not specified
+     * @return {Boolean} result
      */
-    InfoBar.prototype.isLikeFirefox = function(userAgent) {
-        var ua = userAgent || navigator.userAgent;
-        return (/Iceweasel/i).test(ua) || (/IceCat/i).test(ua) ||
-            (/SeaMonkey/i).test(ua) || (/Camino/i).test(ua) ||
-            (/like Firefox/i).test(ua);
-    };
-
-    /**
-     * Rturns true if this is a version of Firefox mobile excluding Firefox for iOS
-     */
-    InfoBar.prototype.isFirefoxMobile = function(userAgent) {
-        var ua = userAgent || navigator.userAgent;
-        return /Mobile|Tablet|Fennec/.test(ua);
-    };
-
-    /**
-     * Returns true if this is *the* Fox
-     */
-    InfoBar.prototype.isFirefox = function(userAgent) {
-        var ua = userAgent || navigator.userAgent;
-        return (/\sFirefox/).test(ua) && !InfoBar.prototype.isLikeFirefox(ua);
-    };
-
-    /**
-     * Returns the users current Firefox version
-     */
-    InfoBar.prototype.getUserVersion = function(userAgent) {
-        var ua = userAgent || navigator.userAgent;
-        return parseInt(ua.match(/Firefox\/(\d+)/)[1], 10);
+    InfoBar.prototype.isLikeFirefox = function (ua) {
+        ua = ua || config.userAgent;
+        return /Iceweasel|IceCat|SeaMonkey|Camino|like\ Firefox/i.test(ua);
     };
 
     /**
      * This implements the update bar, shown for Firefox desktop users that has a version
      * installed two major versions older than the latest.
-     * @param latestVersion {string} - Latest major version of Firefox (optional)
-     * @param buildID {int} - The UA buildID (optional)
+     * @param {string} latestVersion - Latest major version of Firefox (optional)
+     * @param {string} userAgent - The current userAgent string (optional)
+     * @param {int} buildID - The UA buildID (optional)
      */
-    InfoBar.update = function(latestVersion, buildID) {
+    InfoBar.update = function(latestVersion, userAgent, buildID) {
 
-        var content = {};
+        var ua = userAgent || config.userAgent;
 
         latestVersion = parseInt(latestVersion || config.json.latestfx, 10);
         buildID = buildID || navigator.buildID;
 
         var updateBar = new InfoBar('update', 'Update Bar');
 
-        var isFirefox = InfoBar.prototype.isFirefox();
-        var isMobile = InfoBar.prototype.isFirefoxMobile();
-        var isFirefox31ESR = !isMobile && userVersion === 31 && buildID && buildID !== '20140716183446';
+        var isLikeFirefox = InfoBar.prototype.isLikeFirefox(ua);
+        var isFirefox = (/\sFirefox/).test(ua) && !isLikeFirefox;
+        var isMobile = /Mobile|Tablet|Fennec/.test(ua);
+        var isFirefox31ESR = false;
         var isNewer = false;
         var userVersion;
 
         if (isFirefox) {
-            userVersion = InfoBar.prototype.getUserVersion();
+            userVersion = parseInt(ua.match(/Firefox\/(\d+)/)[1], 10);
             isNewer = userVersion > latestVersion;
         }
+
+        isFirefox31ESR = !isMobile && userVersion === 31 && buildID && buildID !== '20140716183446';
 
         if (updateBar.disabled || !isFirefox || isMobile || isFirefox31ESR || isNewer) {
             return false;
@@ -400,17 +415,12 @@
         // https://wiki.mozilla.org/Releases/Firefox_31/Test_Plan
         if (userVersion < latestVersion - 2) {
 
-            content = {
-                msg: config.json.update_message,
-                accept: config.json.update_accept,
-                cancel: config.json.update_cancel
-            };
-
-            updateBar.populateTempl(content);
+            updateBar.populateTmpl('update');
             updateBar.show();
 
             // If the user accepts, show the SUMO article
             updateBar.onaccept.callback = function () {
+                // leaving this as is for now, in case we want to do some GA measurements later on.
                 location.href = 'https://support.mozilla.org/kb/update-firefox-latest-version';
             };
 
@@ -424,27 +434,29 @@
      */
     InfoBar.translate = function(pageLang) {
 
-        var content = {};
         var translationBar = new InfoBar('transbar', 'Translation Bar');
+        var isMatch = InfoBar.prototype.userLangPageLangMatch(config.acceptLangs);
 
-        if (translationBar.disabled || !config.lang) {
+        // if the users acceptLangs match the page or, the translationBar is disabled,
+        // or there is no config.pageLang set, there is nothing to do.
+        if (isMatch || translationBar.disabled || !config.pageLang) {
             return false;
         }
 
         // Do not show Chrome's built-in Translation Bar
         $('head').append('<meta name="google" value="notranslate">');
 
-        // Log the language of the current page
-        translationBar.onshow.trackLabel = translationBar.oncancel.trackLabel = config.lang;
-        translationBar.oncancel.trackAction = 'hide';
+        // clear the href of the $acceptButton
+        config.$acceptButton.attr('href', '');
 
         // If the user selects Yes, show the translated page
         translationBar.onaccept = {
-            trackAction: 'change',
-            trackLabel: config.lang,
             callback: function () {
 
-                var element = config.availableLangs[config.lang];
+                // en-US has an hreflang of "en" not "en-US" so, if the user's
+                // lang is en-US, shorten it to just "en"
+                config.offeredLang = config.offeredLang === 'en-US' ? 'en' : config.offeredLang;
+                var element = config.availableLangs[config.offeredLang];
 
                 if (element.form) { // <option>
                     element.selected = true;
@@ -455,32 +467,30 @@
             }
         };
 
-        content = {
-            msg: config.json.message,
-            accept: config.json.accept,
-            cancel: config.json.cancel
-        };
-
-        translationBar.populateTempl(content);
+        translationBar.populateTmpl('translate');
         translationBar.show().attr({
-            'lang': config.lang,
-            'dir': translationBar.getLanguageBidi(config.lang) ? 'rtl' : 'ltr'
+            'lang': config.offeredLang,
+            'dir': translationBar.getLanguageBidi(config.offeredLang) ? 'rtl' : 'ltr'
         });
     };
 
-    // expose the InfoBar object to window
+    // expose InfoBar to the global scope
     window.InfoBar = InfoBar;
+    // get the user's acceptLanguages
+    config.acceptLangs = InfoBar.prototype.getAcceptLangs();
 
-    config.$infoBar = $('#mozilla-infobar');
-    if (config.$infoBar.length === 0) {
-        // No $infoBar element exists, return false and log a message to the end user.
-        console.log('No infobar element exists. See README for more details.');
+    //getAcceptLangs uses navigator.languages which is currently only supported by
+    // Firefox and Chrome. For the translation bar, we need this property so, if the
+    // above returned undefined, no need to proceed any further.
+    // Note: As the Update Bar only targets Firefox desktop, this check will not affect
+    // it's functionality, so this is safe.
+    if (config.$infoBar.length === 0 || typeof config.acceptLangs === 'undefined') {
         return false;
     }
 
+    // get the current page's language
+    config.pageLang = InfoBar.prototype.normalize(document.documentElement.lang);
     // $infoBar exists, call setup
-    InfoBar.prototype.setup();
-
-    window.InfoBar = InfoBar;
+    InfoBar.prototype.setup(config.acceptLangs, config.pageLang);
 
 })();
